@@ -96,7 +96,6 @@
     };
 
     // --- TEKNIK PROXY AGAR LOGO BISA DI-DOWNLOAD DI PDF ---
-    // Kita gunakan images.weserv.nl untuk membungkus link logo Bone agar bebas hambatan (CORS)
     const logoOriginal = "https://bone.go.id/wp-content/uploads/2019/02/lambang-bone.png";
     const logoProxy = `https://images.weserv.nl/?url=${encodeURIComponent(logoOriginal)}&w=150&output=png`;
     
@@ -105,7 +104,7 @@
     // Pre-load Logo saat halaman dibuka
     function loadLogo() {
         const img = new Image();
-        img.crossOrigin = "Anonymous"; // Penting!
+        img.crossOrigin = "Anonymous"; 
         img.src = logoProxy;
         img.onload = function() {
             const canvas = document.createElement('canvas');
@@ -120,7 +119,7 @@
             console.error("Gagal memuat logo via proxy.");
         };
     }
-    loadLogo(); // Jalankan fungsi load
+    loadLogo(); 
 
     function toggleForm() {
         document.getElementById('form-sku').classList.add('hidden');
@@ -165,14 +164,11 @@
             }
 
             // --- HEADER (KOP SURAT) ---
-            
-            // Masukkan Logo (Jika berhasil terload)
             if (logoDataUrl) {
                 try {
                     doc.addImage(logoDataUrl, 'PNG', 20, 15, 23, 27);
                 } catch (e) { console.warn("Logo skip", e); }
             } else {
-                // Fallback jika logo gagal loading (Kotak Kosong)
                 doc.setDrawColor(150); doc.rect(20, 15, 23, 27);
                 doc.setFontSize(8); doc.text("Logo", 26, 30);
             }
@@ -194,7 +190,6 @@
             let judulSurat = "", nomorSurat = "", isiSurat = "";
             let yPos = 80; const lh = 7;
 
-            // Logika Isi Surat
             if (jenisSurat === 'sku') {
                 judulSurat = "SURAT KETERANGAN USAHA";
                 nomorSurat = "Nomor: 503 / ... / DB / " + new Date().getFullYear();
@@ -236,7 +231,6 @@
                 doc.text(row[0], 30, yPos); doc.text(row[1], 80, yPos); yPos += lh;
             });
             
-            // Alamat Multiline
             doc.text("Alamat", 30, yPos);
             const alamatSplit = doc.splitTextToSize(`: ${alamat}`, 110);
             doc.text(alamatSplit, 80, yPos);
@@ -273,16 +267,25 @@
             doc.text(config.kades, 140, yTTD + 35, null, null, "center");
             doc.setLineWidth(0.5); doc.line(115, yTTD + 36, 165, yTTD + 36);
 
-            // SIMPAN
+            // --- BAGIAN INI TELAH DIPERBAIKI ---
+            // 1. Simpan PDF
             doc.save(`${judulSurat}_${nama}.pdf`);
 
-            // Matikan loading
+            // 2. Matikan loading
             document.getElementById('loading').style.display = 'none';
 
-            // KIRIM WA
+            // 3. JEDA & KONFIRMASI (FIX ANDA)
             setTimeout(() => {
                 const pesan = `Assalamualaikum, saya ${nama} sudah melampirkan file pdf ${judulSurat}. Mohon TTD.`;
-                window.open(`https://wa.me/${config.nomorWA}?text=${encodeURIComponent(pesan)}`, '_blank');
+                const urlWA = `https://wa.me/${config.nomorWA}?text=${encodeURIComponent(pesan)}`;
+
+                // Munculkan popup konfirmasi. User harus klik OK dulu baru WA terbuka.
+                // Ini memberi waktu browser HP menyelesaikan download.
+                const userConfirmed = confirm("File PDF sedang diunduh.\n\nJika sudah muncul notifikasi download selesai, klik 'OK' untuk kirim ke WhatsApp.");
+                
+                if (userConfirmed) {
+                    window.open(urlWA, '_blank');
+                }
             }, 1000);
 
         } catch (error) {
