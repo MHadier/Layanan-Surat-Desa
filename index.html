@@ -92,16 +92,14 @@
         kabupaten: "KABUPATEN BONE",
         alamat: "Jl. Poros Bone Sinjai, Kode Pos 92777",
         kades: "IMRAN MAPPEARE, SE",
-        nomorWA: "6282319527214" // Ganti Nomor Admin
+        nomorWA: "6282319527214"
     };
 
-    // --- TEKNIK PROXY AGAR LOGO BISA DI-DOWNLOAD DI PDF ---
     const logoOriginal = "https://bone.go.id/wp-content/uploads/2019/02/lambang-bone.png";
     const logoProxy = `https://images.weserv.nl/?url=${encodeURIComponent(logoOriginal)}&w=150&output=png`;
     
     let logoDataUrl = null;
 
-    // Pre-load Logo saat halaman dibuka
     function loadLogo() {
         const img = new Image();
         img.crossOrigin = "Anonymous"; 
@@ -113,11 +111,8 @@
             const ctx = canvas.getContext('2d');
             ctx.drawImage(img, 0, 0);
             logoDataUrl = canvas.toDataURL("image/png");
-            console.log("Logo siap dicetak!");
         };
-        img.onerror = function() {
-            console.error("Gagal memuat logo via proxy.");
-        };
+        img.onerror = function() { console.error("Gagal memuat logo."); };
     }
     loadLogo(); 
 
@@ -135,7 +130,6 @@
     }
 
     async function generatePDF() {
-        // Tampilkan loading
         document.getElementById('loading').style.display = 'flex';
 
         if (!window.jspdf) {
@@ -219,7 +213,16 @@
             doc.setFontSize(12); doc.setFont("times", "normal");
             doc.text(nomorSurat, 105, 62, null, null, "center");
             
-            doc.text(isiSurat, 20, 75, {maxWidth: 170, align: "justify"});
+            // --- PERBAIKAN: HANDLING TEXT WRAPPING ---
+            // Pisahkan teks menjadi array baris berdasarkan lebar 170
+            const isiSplit = doc.splitTextToSize(isiSurat, 170);
+            
+            // Render teks paragraf pembuka
+            doc.text(isiSplit, 20, 75, {align: "justify"});
+
+            // Hitung posisi Y baru secara dinamis
+            // 75 (Posisi Awal) + (Jumlah Baris * 6) + 10 (Jarak ke data diri)
+            yPos = 75 + (isiSplit.length * 6) + 10;
 
             // Render Data Diri
             const dataDiri = [
@@ -245,6 +248,7 @@
             } else if (jenisSurat === 'pengantar') {
                 const ket = doc.splitTextToSize(`Keperluan: ${document.getElementById('keperluan_pengantar').value}`, 170);
                 doc.text(ket, 20, yPos);
+                yPos += (ket.length * 6); // Tambahkan spasi dinamis untuk keperluan
             } else if (jenisSurat === 'sktm') {
                 doc.text(`Keperluan: ${document.getElementById('keperluan_sktm').value}`, 20, yPos);
             } else if (jenisSurat === 'waris') {
@@ -257,35 +261,30 @@
             yPos += 15;
             doc.text("Demikian surat ini dibuat untuk dipergunakan sebagaimana mestinya.", 20, yPos, {maxWidth: 170, align: "justify"});
             
-            const yTTD = yPos + 20 > 250 ? 40 : yPos + 20; 
-            if (yPos + 20 > 250) doc.addPage();
+            // Cek apakah sisa halaman cukup untuk TTD
+            if (yPos + 50 > 280) { 
+                doc.addPage();
+                yPos = 20; // Reset posisi di halaman baru
+            }
 
+            const yTTD = yPos + 10;
             const dateStr = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+            
             doc.text(`Buareng, ${dateStr}`, 140, yTTD, null, null, "center");
             doc.text("Kepala Desa,", 140, yTTD + 7, null, null, "center");
             doc.setFont("times", "bold");
             doc.text(config.kades, 140, yTTD + 35, null, null, "center");
             doc.setLineWidth(0.5); doc.line(115, yTTD + 36, 165, yTTD + 36);
 
-            // --- BAGIAN INI TELAH DIPERBAIKI ---
-            // 1. Simpan PDF
+            // SIMPAN & KONFIRMASI
             doc.save(`${judulSurat}_${nama}.pdf`);
-
-            // 2. Matikan loading
             document.getElementById('loading').style.display = 'none';
 
-            // 3. JEDA & KONFIRMASI (FIX ANDA)
             setTimeout(() => {
                 const pesan = `Assalamualaikum, saya ${nama} sudah melampirkan file pdf ${judulSurat}. Mohon TTD.`;
                 const urlWA = `https://wa.me/${config.nomorWA}?text=${encodeURIComponent(pesan)}`;
-
-                // Munculkan popup konfirmasi. User harus klik OK dulu baru WA terbuka.
-                // Ini memberi waktu browser HP menyelesaikan download.
                 const userConfirmed = confirm("File PDF sedang diunduh.\n\nJika sudah muncul notifikasi download selesai, klik 'OK' untuk kirim ke WhatsApp.");
-                
-                if (userConfirmed) {
-                    window.open(urlWA, '_blank');
-                }
+                if (userConfirmed) window.open(urlWA, '_blank');
             }, 1000);
 
         } catch (error) {
