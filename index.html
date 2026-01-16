@@ -8,21 +8,44 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f3f4f6; margin: 0; padding: 20px; color: #1f2937; }
-        .container { max-width: 700px; margin: 0 auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+        /* Variabel Warna Tema */
+        :root {
+            --primary-color: #2ca4d3;       /* Warna Utama */
+            --primary-dark: #2286ad;        /* Warna Hover */
+            --primary-light: rgba(44, 164, 211, 0.1); 
+            --bg-color: #eaf6fb;            /* Background Senada Lebih Muda */
+        }
+
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg-color); margin: 0; padding: 20px; color: #1f2937; }
+        .container { max-width: 700px; margin: 0 auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); border-top: 5px solid var(--primary-color); }
         .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #e5e7eb; padding-bottom: 20px; }
         .header h1 { color: #111827; font-size: 22px; margin: 0; }
+        .header i { color: var(--primary-color); margin-right: 8px; }
+        
         .form-section { margin-bottom: 20px; }
-        .section-title { font-size: 16px; font-weight: bold; color: #374151; margin-bottom: 10px; border-left: 4px solid #2563eb; padding-left: 10px; }
+        .section-title { font-size: 16px; font-weight: bold; color: #374151; margin-bottom: 10px; border-left: 4px solid var(--primary-color); padding-left: 10px; }
         label { display: block; font-size: 14px; font-weight: 500; margin-bottom: 6px; color: #374151; }
-        input, select, textarea { width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px; margin-bottom: 15px; box-sizing: border-box; }
+        
+        input, select, textarea { 
+            width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px; margin-bottom: 15px; box-sizing: border-box; transition: all 0.3s;
+        }
+        
+        /* CSS Capitalize untuk visual instan, JS nanti menanganinya untuk data PDF */
+        input[type="text"], textarea { text-transform: capitalize; }
+
+        input:focus, select:focus, textarea:focus {
+            border-color: var(--primary-color);
+            outline: none;
+            box-shadow: 0 0 0 3px var(--primary-light);
+        }
+
         .hidden { display: none; }
-        .btn-submit { width: 100%; background-color: #2563eb; color: white; padding: 14px; border: none; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer; transition: background 0.3s; margin-top: 10px; }
-        .btn-submit:hover { background-color: #1d4ed8; }
+        .btn-submit { width: 100%; background-color: var(--primary-color); color: white; padding: 14px; border: none; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer; transition: background 0.3s; margin-top: 10px; }
+        .btn-submit:hover { background-color: var(--primary-dark); }
         .note { font-size: 12px; color: #6b7280; text-align: center; margin-top: 15px; font-style: italic; }
-        /* Loading overlay */
+        
         #loading { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.8); z-index: 999; justify-content: center; align-items: center; flex-direction: column; }
-        .spinner { border: 4px solid #f3f3f3; border-top: 4px solid #2563eb; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin-bottom: 10px; }
+        .spinner { border: 4px solid #f3f3f3; border-top: 4px solid var(--primary-color); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin-bottom: 10px; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
@@ -55,28 +78,34 @@
         <div class="form-section">
             <div class="section-title">Data Pemohon</div>
             <label>Nama Lengkap</label>
-            <input type="text" id="nama" placeholder="Sesuai KTP" required>
+            <input type="text" id="nama" class="auto-capital" placeholder="Sesuai KTP" required>
+            
             <label>NIK</label>
-            <input type="number" id="nik" placeholder="16 digit NIK" required>
+            <input type="text" id="nik" maxlength="16" inputmode="numeric" placeholder="16 digit NIK (Angka saja)" required>
+            
             <label>Tempat, Tanggal Lahir</label>
-            <input type="text" id="ttl" placeholder="Contoh: Bone, 12 Januari 1990" required>
+            <input type="text" id="ttl" class="auto-capital" placeholder="Contoh: Bone, 12 Januari 1990" required>
+            
             <label>Jenis Kelamin</label>
             <select id="jk"><option value="Laki-laki">Laki-laki</option><option value="Perempuan">Perempuan</option></select>
+            
             <label>Pekerjaan</label>
-            <input type="text" id="pekerjaan" required>
+            <input type="text" id="pekerjaan" class="auto-capital" required>
+            
             <label>Agama</label>
             <select id="agama">
                 <option value="Islam">Islam</option><option value="Kristen">Kristen</option>
                 <option value="Katolik">Katolik</option><option value="Hindu">Hindu</option><option value="Buddha">Buddha</option>
             </select>
+            
             <label>Alamat</label>
-            <textarea id="alamat" rows="2" required></textarea>
+            <textarea id="alamat" class="auto-capital" rows="2" required></textarea>
         </div>
 
-        <div id="form-sku" class="form-section"><div class="section-title">Detail Usaha</div><label>Nama Usaha</label><input type="text" id="nama_usaha"><label>Jenis Usaha</label><input type="text" id="jenis_usaha"></div>
-        <div id="form-pengantar" class="form-section hidden"><div class="section-title">Keperluan</div><label>Tujuan/Keperluan</label><textarea id="keperluan_pengantar"></textarea></div>
-        <div id="form-sktm" class="form-section hidden"><div class="section-title">Detail SKTM</div><label>Keperluan</label><input type="text" id="keperluan_sktm"></div>
-        <div id="form-waris" class="form-section hidden"><div class="section-title">Data Almarhum</div><label>Nama Almarhum</label><input type="text" id="nama_alm"><label>Tanggal Meninggal</label><input type="date" id="tgl_meninggal"></div>
+        <div id="form-sku" class="form-section"><div class="section-title">Detail Usaha</div><label>Nama Usaha</label><input type="text" id="nama_usaha" class="auto-capital"><label>Jenis Usaha</label><input type="text" id="jenis_usaha" class="auto-capital"></div>
+        <div id="form-pengantar" class="form-section hidden"><div class="section-title">Keperluan</div><label>Tujuan/Keperluan</label><textarea id="keperluan_pengantar" class="auto-capital"></textarea></div>
+        <div id="form-sktm" class="form-section hidden"><div class="section-title">Detail SKTM</div><label>Keperluan</label><input type="text" id="keperluan_sktm" class="auto-capital"></div>
+        <div id="form-waris" class="form-section hidden"><div class="section-title">Data Almarhum</div><label>Nama Almarhum</label><input type="text" id="nama_alm" class="auto-capital"><label>Tanggal Meninggal</label><input type="date" id="tgl_meninggal"></div>
 
         <button type="button" class="btn-submit" onclick="generatePDF()">
             <i class="fas fa-print"></i> Cetak PDF & Kirim
@@ -86,6 +115,34 @@
 </div>
 
 <script>
+    // --- KONFIGURASI SCRIPT ---
+    
+    // 1. LOGIC KHUSUS NIK (Hanya Angka & Max 16)
+    const inputNIK = document.getElementById('nik');
+    inputNIK.addEventListener('input', function(e) {
+        // Hapus karakter selain angka
+        let value = this.value.replace(/[^0-9]/g, '');
+        // Potong jika lebih dari 16
+        if (value.length > 16) value = value.slice(0, 16);
+        this.value = value;
+    });
+
+    // 2. LOGIC AUTO TITLE CASE (Huruf Besar Awal Kata)
+    function toTitleCase(str) {
+        return str.replace(/\w\S*/g, function(txt){
+            return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
+        });
+    }
+
+    // Terapkan ke semua input dengan class 'auto-capital'
+    document.querySelectorAll('.auto-capital').forEach(item => {
+        item.addEventListener('blur', function() {
+            this.value = toTitleCase(this.value);
+        });
+    });
+
+
+    // --- SCRIPT PDF SEBELUMNYA ---
     const config = {
         desa: "DESA BUARENG",
         kecamatan: "KECAMATAN KAJUARA",
@@ -142,7 +199,8 @@
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
 
-            const nama = document.getElementById('nama').value.toUpperCase();
+            // Ambil value (Logic TitleCase sudah diterapkan saat user ngetik/blur, tapi kita pastikan lagi disini jika perlu)
+            const nama = document.getElementById('nama').value.toUpperCase(); // Nama tetap UPPERCASE di surat resmi
             const nik = document.getElementById('nik').value;
             const ttl = document.getElementById('ttl').value;
             const jk = document.getElementById('jk').value;
@@ -155,6 +213,11 @@
                 alert("Data Nama dan NIK wajib diisi!"); 
                 document.getElementById('loading').style.display = 'none';
                 return; 
+            }
+            if (nik.length !== 16) {
+                alert("NIK harus 16 digit angka!");
+                document.getElementById('loading').style.display = 'none';
+                return;
             }
 
             // --- HEADER (KOP SURAT) ---
@@ -182,7 +245,7 @@
 
             // --- ISI SURAT ---
             let judulSurat = "", nomorSurat = "", isiSurat = "";
-            let yPos = 80; const lh = 6.5; // Mengurangi spasi baris sedikit agar lebih rapi
+            let yPos = 80; const lh = 6.5; 
 
             if (jenisSurat === 'sku') {
                 judulSurat = "SURAT KETERANGAN USAHA";
@@ -206,27 +269,18 @@
                 isiSurat = "Yang bertanda tangan di bawah ini Kepala Desa Buareng menerangkan bahwa:";
             }
 
-            // Render Judul
             doc.setFont("times", "bold"); doc.setFontSize(14);
             doc.text(judulSurat, 105, 55, null, null, "center");
             doc.setLineWidth(0.5); doc.line(70, 56, 140, 56);
             doc.setFontSize(12); doc.setFont("times", "normal");
             doc.text(nomorSurat, 105, 62, null, null, "center");
             
-            // --- FIX UTAMA: MENCEGAH TEKS TERPOTONG ---
-            // Gunakan lebar aman 160mm (bukan 170mm) agar margin kanan lebih lega.
-            // splitTextToSize akan memecah kalimat panjang menjadi beberapa baris (array).
             const safeWidth = 160; 
             const isiSplit = doc.splitTextToSize(isiSurat, safeWidth);
-            
-            // Cetak teks paragraf pembuka
             doc.text(isiSplit, 20, 75, { align: "justify", maxWidth: safeWidth });
 
-            // Hitung posisi Y baru secara dinamis agar tidak menimpa data diri
-            // Rumus: Posisi Awal (75) + (Jumlah Baris * Spasi per baris) + Jarak Tambahan (8)
             yPos = 75 + (isiSplit.length * 6) + 8;
 
-            // Render Data Diri
             const dataDiri = [
                 ["Nama Lengkap", `: ${nama}`], ["NIK", `: ${nik}`], ["Tempat/Tgl Lahir", `: ${ttl}`],
                 ["Jenis Kelamin", `: ${jk}`], ["Pekerjaan", `: ${pekerjaan}`], ["Agama", `: ${agama}`]
@@ -241,7 +295,6 @@
             doc.text(alamatSplit, 80, yPos);
             yPos += (alamatSplit.length * lh);
 
-            // Render Data Tambahan
             yPos += 5;
             if (jenisSurat === 'sku') {
                 doc.text("Benar yang bersangkutan mempunyai usaha:", 20, yPos); yPos += lh;
@@ -259,12 +312,10 @@
                  doc.text("Meninggal Tgl", 30, yPos); doc.text(`: ${document.getElementById('tgl_meninggal').value}`, 80, yPos);
             }
 
-            // Penutup & TTD
             yPos += 15;
             const penutupSplit = doc.splitTextToSize("Demikian surat ini dibuat untuk dipergunakan sebagaimana mestinya.", safeWidth);
             doc.text(penutupSplit, 20, yPos, { align: "justify", maxWidth: safeWidth });
             
-            // Cek apakah sisa halaman cukup untuk TTD
             if (yPos + 50 > 280) { 
                 doc.addPage();
                 yPos = 20; 
@@ -279,7 +330,6 @@
             doc.text(config.kades, 140, yTTD + 35, null, null, "center");
             doc.setLineWidth(0.5); doc.line(115, yTTD + 36, 165, yTTD + 36);
 
-            // SIMPAN & KONFIRMASI
             doc.save(`${judulSurat}_${nama}.pdf`);
             document.getElementById('loading').style.display = 'none';
 
